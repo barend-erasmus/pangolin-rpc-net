@@ -7,19 +7,23 @@ using System.Threading;
 
 namespace PangolinRPCNet
 {
-    public class RPC
+    public class RPC : IDisposable
     {
         protected IDictionary<string, Action<Message>> _correlationActions { get; set; }
 
         protected Func<Message, dynamic> _onMessageAction { get; set; }
 
+        protected IList<RPC> _rpcs { get; set; }
+
         protected Socket _socket { get; set; }
 
         protected Thread _thread { get; set; }
 
-        public RPC(Socket socket)
+        public RPC(IList<RPC> rpcs, Socket socket)
         {
             _correlationActions = new Dictionary<string, Action<Message>>();
+
+            _rpcs = rpcs;
 
             _socket = socket;
 
@@ -29,6 +33,17 @@ namespace PangolinRPCNet
             }));
 
             _thread.Start();
+        }
+
+        public void Dispose()
+        {
+            _socket.Close();
+            _socket.Dispose();
+
+            if (_rpcs != null)
+            {
+                _rpcs.Remove(this);
+            }
         }
 
         public void Send(Action<Message> action, Message message)
@@ -104,6 +119,8 @@ namespace PangolinRPCNet
                     }
                 }
             }
+
+            this.Dispose();
         }
 
         protected void SendMessage(Message message, Socket socket)

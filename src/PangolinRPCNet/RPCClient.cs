@@ -21,7 +21,7 @@ namespace PangolinRPCNet
 
             _tcpClient = new TcpClient(_host, _port);
 
-            _rpc = new RPC(_tcpClient.Client);
+            _rpc = new RPC(null, _tcpClient.Client);
         }
 
         public void Send(Action<Message> action, Message message)

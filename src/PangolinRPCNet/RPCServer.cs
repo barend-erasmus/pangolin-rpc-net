@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace PangolinRPCNet
 {
-    public class RPCServer
+    public class RPCServer : IDisposable
     {
         protected TcpListener _tcpListener { get; set; }
 
@@ -25,6 +25,18 @@ namespace PangolinRPCNet
             _rpcs = new List<RPC>();
 
             Listen();
+        }
+
+        public void Dispose()
+        {
+            foreach (var rpc in _rpcs)
+            {
+                rpc.Dispose();
+            }
+
+            _tcpListener.Stop();
+
+            _thread.Abort();
         }
 
         public void Send(Action<Message> action, Message message)
@@ -68,7 +80,7 @@ namespace PangolinRPCNet
                     {
                         var socket = _tcpListener.AcceptSocket();
 
-                        var rpc = new RPC(socket);
+                        var rpc = new RPC(_rpcs, socket);
 
                         rpc.SetOnMessageAction(_onMessageAction);
 

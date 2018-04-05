@@ -40,6 +40,8 @@ namespace PangolinRPCNet.Console
             {
                 System.Console.WriteLine($"Callback => {message.ToString()}");
             }, new Message("show", null, new { Text = "hello world" }));
+
+            rpcServer1.Dispose();
         }
 
         static dynamic OnMessageAction(Message message)
